@@ -1,86 +1,39 @@
-# Deep Web Research — Google AI Edge Skill
+# Deep Web Research — AI Edge Gallery Skill
 
-A skill for the [Google AI Edge Gallery](https://github.com/google-ai-edge/ai-edge-gallery) app that gives the on-device Gemma model real-time access to the web. When the model's training data may be out of date or insufficient, this skill searches **DuckDuckGo** and **Wikipedia** in parallel and returns sourced, up-to-date information — no API key required.
+A skill for the [Google AI Edge Gallery](https://github.com/google-ai-edge/gallery) app that gives your on-device Gemma model real-time access to the web. When a query needs current or factual information, the model fetches from **DuckDuckGo** and **Wikipedia** in parallel and synthesizes a sourced answer — no API key required.
 
-## What it does
+## Install
 
-| Source | What it fetches |
-|--------|----------------|
-| **DuckDuckGo Instant Answers** | Quick answers, abstracts, definitions, and related topics |
-| **Wikipedia** | Article intro text and infobox key/value pairs, in the user's language |
-
-The model receives the combined results and synthesizes them into a concise, cited response.
-
-## When the model uses this skill
-
-The model invokes this skill automatically for:
-
-- Current events or time-sensitive information
-- Specific people, places, organizations, or historical events
-- Definitions, statistics, or factual data where accuracy matters
-- Anything that may have changed after the model's training cutoff
-
-It does **not** use this skill for personal advice, creative writing, math, coding, or casual conversation.
-
-## Installation in Google AI Edge Gallery
-
-This skill is hosted via GitHub Pages. No downloading or file transfer needed — add it directly by URL.
-
-### One-time setup: enable GitHub Pages
-
-If you haven't already, go to the **AI-edge-gallery-duckduckgo** repo settings:
-
-- **Settings → Pages → Source:** `main` branch, `/ (root)`
-- Make sure a `.nojekyll` file exists in the repo root so GitHub Pages serves `SKILL.md` as raw text (not rendered HTML)
-
-Once Pages is enabled, the skill URL is:
+Open **AI Edge Gallery** → Agent Skills → **Skills** chip → **(+)** → **Load skill from URL**:
 
 ```
 https://SilasD12.github.io/AI-edge-gallery-duckduckgo
 ```
 
-### Adding the skill to the app
+## What it fetches
 
-1. **Open AI Edge Gallery** on your device and select your Gemma model
-2. Enter the **Agent Skills** use case
-3. Tap the **Skills** chip → tap **(+)**
-4. Choose **"Load skill from URL"**
-5. Enter: `https://SilasD12.github.io/AI-edge-gallery-duckduckgo`
-6. Confirm — the skill will appear in your skill list immediately
+| Source | Data |
+|--------|------|
+| **DuckDuckGo Instant Answers** | Quick answers, abstracts, definitions, related topics |
+| **Wikipedia** | Article intro and infobox facts, in the user's language |
 
-### Verify the URL is working
+## Usage
 
-Before adding it in the app, you can check that the URL is correct by opening this in a browser — it should display raw markdown text:
+Just ask naturally — the model invokes this skill automatically when it detects a query that benefits from live data:
 
-```
-https://SilasD12.github.io/AI-edge-gallery-duckduckgo/SKILL.md
-```
+- *"Who won the 2025 Nobel Prize in Physics?"*
+- *"What is the population of Tokyo?"*
+- *"Tell me about the James Webb Space Telescope"*
+- *"What happened at the 2026 Oscars?"*
 
-### Start chatting
+It does not trigger for personal advice, creative writing, math, or casual conversation.
 
-Select a Gemma model in the app and ask about any current event or factual topic. The model will invoke the skill automatically when it detects the query benefits from live web data.
+## Language support
 
-## File structure
+Pass queries in any language — the Wikipedia lookup is language-aware and will return results in the user's language (English, Spanish, French, German, Japanese, Korean, Chinese, Portuguese, Arabic, Hindi, and more).
 
-```
-gemma4-skills/
-├── SKILL.md          # Skill metadata and instructions for the model
-└── scripts/
-    └── index.html    # Skill runtime (HTML/JS executed by the app's WebView)
-```
+## How it works
 
-## How it works (technical)
+The AI Edge Gallery app loads `scripts/index.html` in a sandboxed WebView and calls `window.ai_edge_gallery_get_result(data)` with a JSON payload from the model. The script runs both fetches in parallel via `Promise.all`, combines the results, and returns them to the model for synthesis.
 
-The AI Edge Gallery app exposes a `run_js` tool that loads a local HTML file in an isolated WebView and calls `window.ai_edge_gallery_get_result(data)` with a JSON string. This skill implements that function to:
-
-1. Parse `query`, `topic`, and `lang` from the JSON input.
-2. Fetch DuckDuckGo Instant Answers and Wikipedia data **in parallel**.
-3. Return a combined JSON string `{ result: "..." }` (or `{ error: "..." }` on failure).
-
-The Wikipedia fetch is language-aware — pass `"lang": "es"` for Spanish results, `"lang": "ja"` for Japanese, etc.
-
-## Requirements
-
-- iOS or Android device with **AI Edge Gallery** installed
-- Internet access on the device at query time
-- No API keys or accounts needed
+No API keys. No accounts. Works anywhere you have a data connection.
