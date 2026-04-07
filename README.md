@@ -53,7 +53,7 @@ https://<your-username>.github.io/AI-edge-gallery-duckduckgo/deep-web-research
 Before adding it in the app, you can check that the URL is correct by opening this in a browser — it should display raw markdown text:
 
 ```
-https://<your-username>.github.io/AI-edge-gallery-duckduckgo/deep-web-research/SKILL.md
+https://SilasD12.github.io/AI-edge-gallery-duckduckgo/deep-web-research/SKILL.md
 ```
 
 ### Start chatting
