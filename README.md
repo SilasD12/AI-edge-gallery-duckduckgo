@@ -24,32 +24,41 @@ It does **not** use this skill for personal advice, creative writing, math, codi
 
 ## Installation in Google AI Edge Gallery
 
-Follow these steps to sideload the skill into the AI Edge Gallery Android app:
+This skill is hosted via GitHub Pages. No downloading or file transfer needed — add it directly by URL.
 
-1. **Download the skill file**
-   - Get `scripts/index.html` from this repository (either clone it or download the raw file).
+### One-time setup: enable GitHub Pages
 
-2. **Transfer the file to your Android device**
-   - Copy `index.html` to a memorable location on your device's storage (e.g. `Downloads/deep-web-research/index.html`).
+If you haven't already, go to the **AI-edge-gallery-duckduckgo** repo settings:
 
-3. **Open AI Edge Gallery**
-   - Launch the **AI Edge Gallery** app on your Android device.
+- **Settings → Pages → Source:** `main` branch, `/ (root)`
+- Make sure a `.nojekyll` file exists in the repo root so GitHub Pages serves `SKILL.md` as raw text (not rendered HTML)
 
-4. **Navigate to Skills**
-   - Go to **Settings → Skills** (or the **Skills** tab, depending on your app version).
+Once Pages is enabled, the skill URL is:
 
-5. **Add a new skill**
-   - Tap **"Add Skill"** or the **"+"** button.
-   - When prompted, select **"Load from file"** and browse to the `index.html` file you transferred in step 2.
+```
+https://<your-username>.github.io/AI-edge-gallery-duckduckgo/deep-web-research
+```
 
-6. **Confirm the skill details**
-   - The app will read the skill metadata from the file header:
-     - **Name:** `deep-web-research`
-     - **Description:** Research a topic using Wikipedia and DuckDuckGo…
-   - Confirm to finish installation.
+### Adding the skill to the app
 
-7. **Start chatting**
-   - Select a Gemma model in the app and ask about any current event or factual topic. The model will invoke the skill automatically when it detects the query benefits from live web data.
+1. **Open AI Edge Gallery** on your device and select your Gemma model
+2. Enter the **Agent Skills** use case
+3. Tap the **Skills** chip → tap **(+)**
+4. Choose **"Load skill from URL"**
+5. Enter the URL above (with your actual GitHub username)
+6. Confirm — the skill will appear in your skill list immediately
+
+### Verify the URL is working
+
+Before adding it in the app, you can check that the URL is correct by opening this in a browser — it should display raw markdown text:
+
+```
+https://<your-username>.github.io/AI-edge-gallery-duckduckgo/deep-web-research/SKILL.md
+```
+
+### Start chatting
+
+Select a Gemma model in the app and ask about any current event or factual topic. The model will invoke the skill automatically when it detects the query benefits from live web data.
 
 ## File structure
 
@@ -72,6 +81,6 @@ The Wikipedia fetch is language-aware — pass `"lang": "es"` for Spanish result
 
 ## Requirements
 
-- Android device with **AI Edge Gallery** installed
+- iOS or Android device with **AI Edge Gallery** installed
 - Internet access on the device at query time
 - No API keys or accounts needed
