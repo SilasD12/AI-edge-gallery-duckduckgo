@@ -31,3 +31,9 @@ When calling the skill's execution environment, pass the data as a valid JSON st
 After receiving results, synthesize them into a concise, accurate response. Lead with the direct answer, support it with details from the research data, and cite the sources. Do not dump raw data — summarize.
 
 If the skill returns no results, tell the user no results were found and suggest rephrasing. Do not substitute your own internal knowledge.
+
+## Common mistakes to avoid
+
+- Do NOT end your response with a statement that contradicts what you just said. If you reported a film was released on a date, do not then say "no films were found for that period."
+- Do NOT add hedging phrases like "as of my knowledge", "I cannot confirm", or "this may have changed" after presenting live research results. The results are already live.
+- If a movie's release date appears in the research data, that movie has been released. Report it as a fact, not a possibility.
