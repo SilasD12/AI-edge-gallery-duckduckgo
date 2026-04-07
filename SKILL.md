@@ -1,6 +1,6 @@
 ---
 name: deep-web-research
-description: Research a topic in real time using Wikipedia to provide accurate, sourced, up-to-date answers. Use this skill when the user asks about current events, specific people or places, recent facts, definitions, or anything that may have changed after the model's training cutoff.
+description: Research a topic in real time using Wikipedia and DuckDuckGo to provide accurate, sourced, up-to-date answers. Use this skill when the user asks about current events, specific people or places, recent facts, definitions, or anything that may have changed after the model's training cutoff.
 ---
 
 # Deep Web Research

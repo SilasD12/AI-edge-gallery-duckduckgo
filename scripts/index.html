@@ -8,7 +8,67 @@
 <body>
   <script>
     /**
-     * Searches Wikipedia and returns the article intro + infobox key-value pairs.
+     * Queries the DuckDuckGo Instant Answer API via JSONP.
+     * JSONP uses a <script> tag instead of fetch(), bypassing CORS restrictions
+     * in iOS WKWebView. DDG explicitly supports this via the ?callback= param.
+     */
+    function fetchDuckDuckGo(query) {
+      return new Promise((resolve) => {
+        const callbackName = 'ddg_' + Date.now();
+        const script = document.createElement('script');
+
+        const timeout = setTimeout(() => {
+          delete window[callbackName];
+          script.remove();
+          console.warn('DuckDuckGo JSONP timeout');
+          resolve(null);
+        }, 8000);
+
+        window[callbackName] = (d) => {
+          clearTimeout(timeout);
+          delete window[callbackName];
+          script.remove();
+
+          let out = '';
+          if (d.Answer)       out += `Quick Answer: ${d.Answer}\n`;
+          if (d.AbstractText) out += `Summary (${d.AbstractSource || 'DuckDuckGo'}): ${d.AbstractText}\n`;
+          if (d.Definition)   out += `Definition (${d.DefinitionSource || 'DuckDuckGo'}): ${d.Definition}\n`;
+          if (d.RelatedTopics?.length) {
+            const topics = d.RelatedTopics
+              .filter((t) => t.Text)
+              .slice(0, 4)
+              .map((t) => `  - ${t.Text}`)
+              .join('\n');
+            if (topics) out += `\nRelated:\n${topics}\n`;
+          }
+
+          resolve(out.trim() || null);
+        };
+
+        script.onerror = () => {
+          clearTimeout(timeout);
+          delete window[callbackName];
+          console.warn('DuckDuckGo JSONP script load error');
+          resolve(null);
+        };
+
+        script.src =
+          'https://api.duckduckgo.com/?' +
+          new URLSearchParams({
+            q: query,
+            format: 'json',
+            no_html: '1',
+            skip_disambig: '1',
+            callback: callbackName,
+          });
+
+        document.head.appendChild(script);
+      });
+    }
+
+    /**
+     * Queries the Wikipedia API using fuzzy search.
+     * Returns the article intro + infobox key-value pairs.
      * Uses origin=* for CORS compatibility in WKWebView.
      */
     async function fetchWikipedia(topic, lang) {
@@ -85,26 +145,41 @@
 
     /**
      * Main entry point called by the AI Edge Gallery app.
+     * Runs DuckDuckGo (JSONP) and Wikipedia in parallel, then combines results.
      */
     window['ai_edge_gallery_get_result'] = async (data) => {
       try {
         const { query, topic, lang = 'en' } = JSON.parse(data);
-        const searchTerm = topic || query;
 
-        if (!searchTerm) {
+        if (!query && !topic) {
           return JSON.stringify({ error: 'Missing required fields: provide at least "query" or "topic".' });
         }
 
-        const wiki = await fetchWikipedia(searchTerm, lang);
+        const [ddg, wiki] = await Promise.all([
+          fetchDuckDuckGo(query || topic),
+          fetchWikipedia(topic || query, lang),
+        ]);
 
-        if (!wiki) {
+        const sections = [];
+        const sources = [];
+
+        if (ddg) {
+          sections.push(`=== DUCKDUCKGO INSTANT ANSWER ===\n${ddg}`);
+          sources.push('DuckDuckGo');
+        }
+        if (wiki) {
+          sections.push(`=== WIKIPEDIA: ${wiki.title} ===\n${wiki.content}`);
+          sources.push(`Wikipedia ("${wiki.title}")`);
+        }
+
+        if (sections.length === 0) {
           return JSON.stringify({
-            error: `No Wikipedia results found for "${searchTerm}". Try a shorter or more specific keyword.`,
+            error: `No results found for "${query || topic}". Try a shorter or more specific keyword.`,
           });
         }
 
         return JSON.stringify({
-          result: `=== WIKIPEDIA: ${wiki.title} ===\n${wiki.content}\n\n[Source: Wikipedia ("${wiki.title}")]`,
+          result: sections.join('\n\n') + `\n\n[Sources: ${sources.join(', ')}]`,
         });
       } catch (e) {
         console.error('deep-web-research error:', e);
