@@ -1,6 +1,6 @@
 ---
 name: deep-web-research
-description: Research a topic in real time using Wikipedia and DuckDuckGo to provide accurate, sourced, up-to-date answers. Use this skill when the user asks about current events, specific people or places, recent facts, definitions, or anything that may have changed after the model's training cutoff.
+description: Research a topic in real time using Wikipedia to provide accurate, sourced, up-to-date answers. Use this skill when the user asks about current events, specific people or places, recent facts, definitions, or anything that may have changed after the model's training cutoff.
 ---
 
 # Deep Web Research
@@ -13,7 +13,7 @@ When calling the skill's execution environment, pass the data as a valid JSON st
 
 ```json
 {
-  "query": "<keyword query for DuckDuckGo>",
+  "query": "<keyword query>",
   "topic": "<primary subject entity for Wikipedia lookup>",
   "lang": "<2-letter language code, e.g. en, es, fr, de, ja>"
 }
