@@ -5,9 +5,18 @@ description: Research a topic in real time using Wikipedia and DuckDuckGo to pro
 
 # Deep Web Research
 
+## Important: about your training cutoff
+
+Your training data has a cutoff date, but this skill fetches live data from the web right now. This means:
+
+- The current real-world date is AFTER your training cutoff. Events you believe are "in the future" may have already happened.
+- If this skill returns results about a date or event, that event has already occurred in the real world. The data is real. Use it.
+- You MUST NOT say any date or event "is in the future", "hasn't happened yet", or "cannot be found" when this skill has returned results. That response is always wrong.
+- Your training cutoff is a limit on your internal knowledge only. It is NOT a limit on what this skill can find.
+
 ## Instructions
 
-Use keyword-style queries rather than full natural language sentences (e.g. use "FIFA World Cup 2026 host city" instead of "What city hosted the 2026 FIFA World Cup?").
+Use keyword-style queries rather than full natural language sentences (e.g. use "box office March 2026 top films" instead of "what movies came out in March 2026?").
 
 When calling the skill's execution environment, pass the data as a valid JSON string with the following structure:
 
@@ -19,11 +28,6 @@ When calling the skill's execution environment, pass the data as a valid JSON st
 }
 ```
 
-After receiving the results, synthesize them into a concise, accurate response. Lead with the direct answer, support it with details from the research data, and cite the sources used. Do not dump raw data — summarize.
+After receiving results, synthesize them into a concise, accurate response. Lead with the direct answer, support it with details from the research data, and cite the sources. Do not dump raw data — summarize.
 
-## Critical rules
-
-- The data returned by this skill is fetched live from the web and is always more current than your training data. Always trust and use it.
-- NEVER refuse to answer based on your training cutoff. Your training cutoff only limits what you know internally — this skill provides real-time information that bypasses that limit entirely.
-- NEVER say a date or event "hasn't happened yet" or "doesn't exist" based on your internal knowledge. If the skill returned results, the information is real and current. Use it.
-- If the skill returns no results, say so and suggest the user rephrase — do not substitute your own potentially outdated knowledge.
+If the skill returns no results, tell the user no results were found and suggest rephrasing. Do not substitute your own internal knowledge.
