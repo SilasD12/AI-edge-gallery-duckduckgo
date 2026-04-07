@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Deep Web Research</title>
+</head>
+<body>
+  <script>
+    /**
+     * Queries the DuckDuckGo Instant Answer API.
+     * Returns a formatted string with quick answers, abstracts, and related topics.
+     * No API key required.
+     */
+    async function fetchDuckDuckGo(query) {
+      try {
+        const url =
+          'https://api.duckduckgo.com/?' +
+          new URLSearchParams({
+            q: query,
+            format: 'json',
+            no_html: '1',
+            skip_disambig: '1',
+          });
+        const res = await fetch(url);
+        if (!res.ok) return null;
+        const d = await res.json();
+
+        let out = '';
+
+        if (d.Answer) {
+          out += `Quick Answer: ${d.Answer}\n`;
+        }
+        if (d.AbstractText) {
+          out += `Summary (${d.AbstractSource || 'DuckDuckGo'}): ${d.AbstractText}\n`;
+          if (d.AbstractURL) out += `URL: ${d.AbstractURL}\n`;
+        }
+        if (d.Definition) {
+          out += `Definition (${d.DefinitionSource || ''}): ${d.Definition}\n`;
+        }
+        if (d.RelatedTopics && d.RelatedTopics.length > 0) {
+          const topics = d.RelatedTopics
+            .filter((t) => t.Text)
+            .slice(0, 4)
+            .map((t) => `  - ${t.Text}`)
+            .join('\n');
+          if (topics) out += `\nRelated topics:\n${topics}\n`;
+        }
+
+        return out.trim() || null;
+      } catch (e) {
+        console.warn('DuckDuckGo fetch failed:', e.message);
+        return null;
+      }
+    }
+
+    /**
+     * Queries the Wikipedia API using fuzzy search.
+     * Returns the article intro + infobox key-value pairs.
+     * No API key required.
+     */
+    async function fetchWikipedia(topic, lang) {
+      try {
+        const base = `https://${lang}.wikipedia.org/w/api.php`;
+
+        // Step 1: Fuzzy search → get article title + intro text
+        const searchRes = await fetch(
+          base +
+            '?' +
+            new URLSearchParams({
+              action: 'query',
+              format: 'json',
+              generator: 'search',
+              gsrsearch: topic,
+              gsrlimit: '1',
+              prop: 'extracts',
+              explaintext: '1',
+              exintro: '1',
+              origin: '*',
+            })
+        );
+        if (!searchRes.ok) return null;
+        const searchData = await searchRes.json();
+        if (!searchData.query?.pages) return null;
+
+        const page = Object.values(searchData.query.pages)[0];
+        const title = page?.title || topic;
+        const extract = page?.extract || '';
+
+        // Step 2: Fetch Section 0 HTML to extract infobox key/value pairs
+        let infoboxText = '';
+        try {
+          const parseRes = await fetch(
+            base +
+              '?' +
+              new URLSearchParams({
+                action: 'parse',
+                page: title,
+                section: '0',
+                prop: 'text',
+                format: 'json',
+                origin: '*',
+              })
+          );
+          const parseData = await parseRes.json();
+          const html = parseData?.parse?.text?.['*'];
+          if (html) {
+            const doc = new DOMParser().parseFromString(html, 'text/html');
+            const infobox = doc.querySelector('table.infobox');
+            if (infobox) {
+              infobox.querySelectorAll('tr').forEach((row) => {
+                const th = row.querySelector('th');
+                const td = row.querySelector('td');
+                if (th && td) {
+                  const key = th.textContent.replace(/\[\d+\]/g, '').trim();
+                  const val = td.textContent
+                    .replace(/\[\d+\]/g, '')
+                    .trim()
+                    .replace(/\n+/g, ' | ');
+                  infoboxText += `${key}: ${val}\n`;
+                }
+              });
+            }
+          }
+        } catch (e) {
+          console.warn('Infobox parse failed:', e.message);
+        }
+
+        // Step 3: Assemble and cap length to protect context window
+        let combined = '';
+        if (infoboxText) combined += `--- INFOBOX: ${title} ---\n${infoboxText}\n`;
+        if (extract)     combined += `--- INTRO ---\n${extract}`;
+
+        const maxChars = lang === 'zh' ? 1500 : 4500;
+        if (combined.length > maxChars) {
+          combined = combined.substring(0, maxChars) + '\n... [truncated to save context]';
+        }
+
+        return combined.trim() ? { title, content: combined } : null;
+      } catch (e) {
+        console.warn('Wikipedia fetch failed:', e.message);
+        return null;
+      }
+    }
+
+    /**
+     * Main entry point called by the AI Edge Gallery app.
+     * Runs DuckDuckGo and Wikipedia fetches in parallel, then combines results.
+     */
+    window['ai_edge_gallery_get_result'] = async (data) => {
+      try {
+        const { query, topic, lang = 'en' } = JSON.parse(data);
+
+        if (!query && !topic) {
+          return JSON.stringify({ error: 'Missing required fields: provide at least "query" or "topic".' });
+        }
+
+        // Run both sources in parallel for speed
+        const [ddg, wiki] = await Promise.all([
+          fetchDuckDuckGo(query || topic),
+          fetchWikipedia(topic || query, lang),
+        ]);
+
+        const sections = [];
+        const sources = [];
+
+        if (ddg) {
+          sections.push(`=== DUCKDUCKGO INSTANT ANSWER ===\n${ddg}`);
+          sources.push('DuckDuckGo');
+        }
+
+        if (wiki) {
+          sections.push(`=== WIKIPEDIA: ${wiki.title} ===\n${wiki.content}`);
+          sources.push(`Wikipedia ("${wiki.title}")`);
+        }
+
+        if (sections.length === 0) {
+          return JSON.stringify({
+            error: `No results found for "${query || topic}". The query may be too obscure, misspelled, or not yet indexed. Try rephrasing.`,
+          });
+        }
+
+        const result =
+          sections.join('\n\n') +
+          `\n\n[Sources queried: ${sources.join(', ')}]`;
+
+        return JSON.stringify({ result });
+      } catch (e) {
+        console.error('deep-web-research error:', e);
+        return JSON.stringify({ error: `Research failed: ${e.message}` });
+      }
+    };
+  </script>
+</body>
+</html>
