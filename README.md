@@ -36,7 +36,7 @@ If you haven't already, go to the **AI-edge-gallery-duckduckgo** repo settings:
 Once Pages is enabled, the skill URL is:
 
 ```
-https://<your-username>.github.io/AI-edge-gallery-duckduckgo/deep-web-research
+https://SilasD12.github.io/AI-edge-gallery-duckduckgo
 ```
 
 ### Adding the skill to the app
@@ -45,7 +45,7 @@ https://<your-username>.github.io/AI-edge-gallery-duckduckgo/deep-web-research
 2. Enter the **Agent Skills** use case
 3. Tap the **Skills** chip → tap **(+)**
 4. Choose **"Load skill from URL"**
-5. Enter the URL above (with your actual GitHub username)
+5. Enter: `https://SilasD12.github.io/AI-edge-gallery-duckduckgo`
 6. Confirm — the skill will appear in your skill list immediately
 
 ### Verify the URL is working
@@ -53,7 +53,7 @@ https://<your-username>.github.io/AI-edge-gallery-duckduckgo/deep-web-research
 Before adding it in the app, you can check that the URL is correct by opening this in a browser — it should display raw markdown text:
 
 ```
-https://SilasD12.github.io/AI-edge-gallery-duckduckgo/deep-web-research/SKILL.md
+https://SilasD12.github.io/AI-edge-gallery-duckduckgo/SKILL.md
 ```
 
 ### Start chatting
