@@ -1,4 +1,4 @@
-# Deep Web Research — AI Edge Gallery Skill
+# Web Research — AI Edge Gallery Skill
 
 A skill for the [Google AI Edge Gallery](https://github.com/google-ai-edge/gallery) app that gives your on-device Gemma model real-time access to the web. When a query needs current or factual information, the model fetches from **DuckDuckGo** and **Wikipedia** in parallel and synthesizes a sourced answer — no API key required.
 
